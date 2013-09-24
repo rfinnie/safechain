@@ -91,7 +91,16 @@ sc_postprocess() {
 # Wrapper for "iptables -A", redirecting to the new chain
 sc_add_rule() {
     SC_NAME="$1"; shift
-    iptables -A "${SC_NAME}_new" "$@"
+    if [ -n "${SC_COMMENT:+1}" ]; then
+        if [ "${#SC_COMMENT}" -gt 255 ]; then
+            SC_COMMENT_TRUNCATE=$(echo "${SC_COMMENT}" | cut -c1-255)
+        else
+            SC_COMMENT_TRUNCATE=$SC_COMMENT
+        fi
+        iptables -A "${SC_NAME}_new" -m comment --comment="${SC_COMMENT_TRUNCATE}" "$@"
+    else
+        iptables -A "${SC_NAME}_new" "$@"
+    fi
     SC_ADD_COUNT=$((${SC_ADD_COUNT} + 1))
     if [ "${SC_V}" = 1 ]; then
         # Don't output too often
