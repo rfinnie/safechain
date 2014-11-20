@@ -138,7 +138,7 @@ _sc_cmd_postprocess() {
     else
       SC_CURRENT_CHAIN_V4=""
     fi
-    [ "${SC_V}" = 1 ] && echo "[$(date +'%H:%M:%S')] ${SC_DISPLAY_NAME}: Done!" >&2
+    if [ "${SC_V}" = 1 ]; then echo "[$(date +'%H:%M:%S')] ${SC_DISPLAY_NAME}: Done!"; fi >&2
 }
 sc_postprocess() {
     _sc_cmd_postprocess iptables "$@"
