@@ -29,6 +29,10 @@ else
     SC_V=0
 fi
 
+# Newer iptables requires -w
+# https://utcc.utoronto.ca/~cks/space/blog/linux/IptablesWOptionFumbles
+SC_IPTABLES_OPTS="${SC_IPTABLES_OPTS:-"-w"}"
+
 SC_CURRENT_CHAIN_V4=""
 SC_CURRENT_CHAIN_V6=""
 
@@ -54,27 +58,27 @@ _sc_cmd_preprocess() {
     fi
     [ "${SC_V}" = 1 ] && echo "[$(date +'%H:%M:%S')] ${SC_DISPLAY_NAME}: Running sanity checks" >&2
     # Check for jump chain (must exist)
-    if ! "${SC_CMD}" -n -L ${SC_NAME} >/dev/null 2>/dev/null; then
+    if ! "${SC_CMD}" ${SC_IPTABLES_OPTS} -n -L ${SC_NAME} >/dev/null 2>/dev/null; then
         echo "${SC_NAME} does not exist!  Cowardly refusing to continue." >&2
         echo "Please examine ${SC_CMD}-save and figure out what went wrong." >&2
         exit 1
     fi
     # Create the live chain if it doesn't exist (system boot)
-    "${SC_CMD}" -N ${SC_NAME}_live 2>/dev/null || true
+    "${SC_CMD}" ${SC_IPTABLES_OPTS} -N ${SC_NAME}_live 2>/dev/null || true
     # Check for old chain (must not exist)
-    if "${SC_CMD}" -n -L ${SC_NAME}_old >/dev/null 2>/dev/null; then
+    if "${SC_CMD}" ${SC_IPTABLES_OPTS} -n -L ${SC_NAME}_old >/dev/null 2>/dev/null; then
         echo "${SC_NAME}_old exists!  Cowardly refusing to continue." >&2
         echo "Please examine ${SC_CMD}-save and figure out what went wrong." >&2
         exit 1
     fi
     # Check for new chain (must not exist)
-    if "${SC_CMD}" -n -L ${SC_NAME}_new >/dev/null 2>/dev/null; then
+    if "${SC_CMD}" ${SC_IPTABLES_OPTS} -n -L ${SC_NAME}_new >/dev/null 2>/dev/null; then
         echo "${SC_NAME}_new exists!  Cowardly refusing to continue." >&2
         echo "Please examine ${SC_CMD}-save and figure out what went wrong." >&2
         exit 1
     fi
     [ "${SC_V}" = 1 ] && echo "[$(date +'%H:%M:%S')] ${SC_DISPLAY_NAME}: Creating new chain" >&2
-    "${SC_CMD}" -N ${SC_NAME}_new
+    "${SC_CMD}" ${SC_IPTABLES_OPTS} -N ${SC_NAME}_new
     SC_ADD_COUNT=0
     SC_COUNT_PRINTED=0
     if [ "${SC_CMD}" = "ip6tables" ]; then
@@ -117,22 +121,22 @@ _sc_cmd_postprocess() {
     fi
     [ "${SC_V}" = 1 ] && echo "[$(date +'%H:%M:%S')] ${SC_DISPLAY_NAME}: Making new chain live" >&2
     # The new ruleset is now running after this command succeeds
-    "${SC_CMD}" -I ${SC_NAME} -j ${SC_NAME}_new
+    "${SC_CMD}" ${SC_IPTABLES_OPTS} -I ${SC_NAME} -j ${SC_NAME}_new
     # When this happens, the jump to ${SC_NAME}_live in the jump chain
     # is automatically renamed to ${SC_NAME}_old at the same time.
-    "${SC_CMD}" -E ${SC_NAME}_live ${SC_NAME}_old
+    "${SC_CMD}" ${SC_IPTABLES_OPTS} -E ${SC_NAME}_live ${SC_NAME}_old
     # When this happens, the jump to ${SC_NAME}_new in the jump chain is
     # automatically renamed to ${SC_NAME}_live at the same time.
-    "${SC_CMD}" -E ${SC_NAME}_new ${SC_NAME}_live
+    "${SC_CMD}" ${SC_IPTABLES_OPTS} -E ${SC_NAME}_new ${SC_NAME}_live
     [ "${SC_V}" = 1 ] && echo "[$(date +'%H:%M:%S')] ${SC_DISPLAY_NAME}: Removing old chain" >&2
     # As noted above, this used to be a jump to ${SC_NAME}_live, until
     # the rename.  Note that this rule might not exist, e.g. during
     # first boot.
-    "${SC_CMD}" -D ${SC_NAME} -j ${SC_NAME}_old 2>/dev/null || true
+    "${SC_CMD}" ${SC_IPTABLES_OPTS} -D ${SC_NAME} -j ${SC_NAME}_old 2>/dev/null || true
     # If everything went well, there should be no more references to
     # this chain, and a flush/delete will succeed.
-    "${SC_CMD}" -F ${SC_NAME}_old
-    "${SC_CMD}" -X ${SC_NAME}_old
+    "${SC_CMD}" ${SC_IPTABLES_OPTS} -F ${SC_NAME}_old
+    "${SC_CMD}" ${SC_IPTABLES_OPTS} -X ${SC_NAME}_old
     if [ "${SC_CMD}" = "ip6tables" ]; then
       SC_CURRENT_CHAIN_V6=""
     else
@@ -175,9 +179,9 @@ _sc_cmd_add_rule() {
         else
             SC_COMMENT_TRUNCATE=$SC_COMMENT
         fi
-        "${SC_CMD}" -A "${SC_NAME}_new" -m comment --comment="${SC_COMMENT_TRUNCATE}" "$@"
+        "${SC_CMD}" ${SC_IPTABLES_OPTS} -A "${SC_NAME}_new" -m comment --comment="${SC_COMMENT_TRUNCATE}" "$@"
     else
-        "${SC_CMD}" -A "${SC_NAME}_new" "$@"
+        "${SC_CMD}" ${SC_IPTABLES_OPTS} -A "${SC_NAME}_new" "$@"
     fi
     SC_ADD_COUNT=$((${SC_ADD_COUNT} + 1))
     if [ "${SC_V}" = 1 ]; then
