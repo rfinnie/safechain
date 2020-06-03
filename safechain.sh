@@ -24,10 +24,11 @@ set -u
 
 # Only be verbose if stderr is a terminal
 if [ -t 2 ]; then
-    SC_V=1
+    SC_V_TERM=1
 else
-    SC_V=0
+    SC_V_TERM=0
 fi
+SC_V="${SC_V:-${SC_V_TERM}}"
 
 # Newer iptables requires -w
 # https://utcc.utoronto.ca/~cks/space/blog/linux/IptablesWOptionFumbles
@@ -56,7 +57,7 @@ _sc_cmd_preprocess() {
       echo "This was most likely caused by an error in the script layout." >&2
       exit 1
     fi
-    [ "${SC_V}" = 1 ] && echo "[$(date +'%H:%M:%S')] ${SC_DISPLAY_NAME}: Running sanity checks" >&2
+    if [ "${SC_V}" = 1 ]; then echo "[$(date +'%H:%M:%S')] ${SC_DISPLAY_NAME}: Running sanity checks" >&2; fi
     # Check for jump chain (must exist)
     if ! "${SC_CMD}" ${SC_IPTABLES_OPTS} -n -L ${SC_NAME} >/dev/null 2>/dev/null; then
         echo "${SC_NAME} does not exist!  Cowardly refusing to continue." >&2
@@ -77,7 +78,7 @@ _sc_cmd_preprocess() {
         echo "Please examine ${SC_CMD}-save and figure out what went wrong." >&2
         exit 1
     fi
-    [ "${SC_V}" = 1 ] && echo "[$(date +'%H:%M:%S')] ${SC_DISPLAY_NAME}: Creating new chain" >&2
+    if [ "${SC_V}" = 1 ]; then echo "[$(date +'%H:%M:%S')] ${SC_DISPLAY_NAME}: Creating new chain" >&2; fi
     "${SC_CMD}" ${SC_IPTABLES_OPTS} -N ${SC_NAME}_new
     SC_ADD_COUNT=0
     SC_COUNT_PRINTED=0
@@ -119,7 +120,7 @@ _sc_cmd_postprocess() {
       echo " ${SC_ADD_COUNT} rules added" >&2
       SC_COUNT_PRINTED=1
     fi
-    [ "${SC_V}" = 1 ] && echo "[$(date +'%H:%M:%S')] ${SC_DISPLAY_NAME}: Making new chain live" >&2
+    if [ "${SC_V}" = 1 ]; then echo "[$(date +'%H:%M:%S')] ${SC_DISPLAY_NAME}: Making new chain live" >&2; fi
     # The new ruleset is now running after this command succeeds
     "${SC_CMD}" ${SC_IPTABLES_OPTS} -I ${SC_NAME} -j ${SC_NAME}_new
     # When this happens, the jump to ${SC_NAME}_live in the jump chain
@@ -128,7 +129,7 @@ _sc_cmd_postprocess() {
     # When this happens, the jump to ${SC_NAME}_new in the jump chain is
     # automatically renamed to ${SC_NAME}_live at the same time.
     "${SC_CMD}" ${SC_IPTABLES_OPTS} -E ${SC_NAME}_new ${SC_NAME}_live
-    [ "${SC_V}" = 1 ] && echo "[$(date +'%H:%M:%S')] ${SC_DISPLAY_NAME}: Removing old chain" >&2
+    if [ "${SC_V}" = 1 ]; then echo "[$(date +'%H:%M:%S')] ${SC_DISPLAY_NAME}: Removing old chain" >&2; fi
     # As noted above, this used to be a jump to ${SC_NAME}_live, until
     # the rename.  Note that this rule might not exist, e.g. during
     # first boot.
@@ -142,7 +143,7 @@ _sc_cmd_postprocess() {
     else
       SC_CURRENT_CHAIN_V4=""
     fi
-    if [ "${SC_V}" = 1 ]; then echo "[$(date +'%H:%M:%S')] ${SC_DISPLAY_NAME}: Done!"; fi >&2
+    if [ "${SC_V}" = 1 ]; then echo "[$(date +'%H:%M:%S')] ${SC_DISPLAY_NAME}: Done!" >&2; fi
 }
 sc_postprocess() {
     _sc_cmd_postprocess iptables "$@"
