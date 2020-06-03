@@ -5,7 +5,7 @@
 #
 # Usage (assuming subchain.sh):
 #
-# . /etc/network/safechain.sh
+# . "$(dirname "$(readlink -f "$0")")/safechain.sh"
 # sc_preprocess subchain
 # sc_add_rule subchain -d $HOST $SSH -j ACCEPT
 # sc_add_rule subchain ...
