@@ -1,0 +1,12 @@
+[Unit]
+Description=Safechain Firewall
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/etc/safechain/firewall-wrapper.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
