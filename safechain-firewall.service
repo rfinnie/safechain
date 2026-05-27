@@ -1,3 +1,9 @@
+# SPDX-PackageName: safechain
+# SPDX-PackageSupplier: Ryan Finnie <ryan@finnie.org>
+# SPDX-PackageDownloadLocation: https://forge.colobox.com/rfinnie/safechain
+# SPDX-FileCopyrightText: © 2020 Ryan Finnie <ryan@finnie.org>
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
 [Unit]
 Description=Safechain Firewall
 Wants=network-online.target

@@ -1,8 +1,15 @@
-#!/bin/sh
+# SPDX-PackageName: safechain
+# SPDX-PackageSupplier: Ryan Finnie <ryan@finnie.org>
+# SPDX-PackageDownloadLocation: https://forge.colobox.com/rfinnie/safechain
+# SPDX-FileCopyrightText: © 2013 Canonical Ltd.
+# SPDX-FileCopyrightText: © 2013 Ryan Finnie <ryan@finnie.org>
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
+# shellcheck shell=sh
+
 ########################################################################
 # Safechain idempotent firewall wrapper
-# Copyright (C) 2013-2020 Canonical Ltd., Ryan Finnie
-# https://github.com/rfinnie/safechain
+# https://forge.colobox.com/rfinnie/safechain
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as
@@ -55,7 +62,8 @@ SC_CURRENT_CHAIN_V6=""
 # Centralize running iptables/ip6tables commands, with global
 # ${SC_IPTABLES_OPTS} immediately after the program name
 _sc_iptables_run() {
-    SC_CMD="$1"; shift
+    SC_CMD="$1"
+    shift
     # shellcheck disable=SC2086
     "${SC_CMD}" ${SC_IPTABLES_OPTS} "$@"
 }
@@ -67,18 +75,18 @@ _sc_cmd_preprocess() {
     SC_CMD="$1"
     SC_NAME="$2"
     if [ "${SC_CMD}" = "ip6tables" ]; then
-      SC_DISPLAY_NAME="${SC_NAME} (v6)"
-      SC_CURRENT_CHAIN="${SC_CURRENT_CHAIN_V6}"
+        SC_DISPLAY_NAME="${SC_NAME} (v6)"
+        SC_CURRENT_CHAIN="${SC_CURRENT_CHAIN_V6}"
     else
-      SC_DISPLAY_NAME="${SC_NAME} (v4)"
-      SC_CURRENT_CHAIN="${SC_CURRENT_CHAIN_V4}"
+        SC_DISPLAY_NAME="${SC_NAME} (v4)"
+        SC_CURRENT_CHAIN="${SC_CURRENT_CHAIN_V4}"
     fi
     # Check to make sure we're starting clean
     if [ -n "${SC_CURRENT_CHAIN}" ]; then
-      echo "${SC_CURRENT_CHAIN} not finished!  Cowardly refusing to continue." >&2
-      echo "Looks like sc_preprocess was called without finishing sc_postprocess first." >&2
-      echo "This was most likely caused by an error in the script layout." >&2
-      exit 1
+        echo "${SC_CURRENT_CHAIN} not finished!  Cowardly refusing to continue." >&2
+        echo "Looks like sc_preprocess was called without finishing sc_postprocess first." >&2
+        echo "This was most likely caused by an error in the script layout." >&2
+        exit 1
     fi
     if [ "${SC_V}" = 1 ]; then echo "[$(date +'%H:%M:%S.%N')] ${SC_DISPLAY_NAME}: Running sanity checks" >&2; fi
     # Check for jump chain (must exist)
@@ -106,9 +114,9 @@ _sc_cmd_preprocess() {
     SC_ADD_COUNT=0
     SC_COUNT_PRINTED=0
     if [ "${SC_CMD}" = "ip6tables" ]; then
-      SC_CURRENT_CHAIN_V6="${SC_NAME}"
+        SC_CURRENT_CHAIN_V6="${SC_NAME}"
     else
-      SC_CURRENT_CHAIN_V4="${SC_NAME}"
+        SC_CURRENT_CHAIN_V4="${SC_NAME}"
     fi
 }
 sc_preprocess() {
@@ -129,19 +137,19 @@ _sc_cmd_postprocess() {
     SC_CMD="$1"
     SC_NAME="$2"
     if [ "${SC_CMD}" = "ip6tables" ]; then
-      SC_DISPLAY_NAME="${SC_NAME} (v6)"
-      SC_CURRENT_CHAIN="${SC_CURRENT_CHAIN_V6}"
+        SC_DISPLAY_NAME="${SC_NAME} (v6)"
+        SC_CURRENT_CHAIN="${SC_CURRENT_CHAIN_V6}"
     else
-      SC_DISPLAY_NAME="${SC_NAME} (v4)"
-      SC_CURRENT_CHAIN="${SC_CURRENT_CHAIN_V4}"
+        SC_DISPLAY_NAME="${SC_NAME} (v4)"
+        SC_CURRENT_CHAIN="${SC_CURRENT_CHAIN_V4}"
     fi
     if [ ! "${SC_NAME}" = "${SC_CURRENT_CHAIN}" ]; then
-      echo "${SC_NAME} != ${SC_CURRENT_CHAIN}!  Typo?  Bailing out." >&2
-      exit 1
+        echo "${SC_NAME} != ${SC_CURRENT_CHAIN}!  Typo?  Bailing out." >&2
+        exit 1
     fi
     if [ "${SC_V}" = 1 ] && [ "${SC_COUNT_PRINTED}" = 0 ]; then
-      echo " ${SC_ADD_COUNT} rules added" >&2
-      SC_COUNT_PRINTED=1
+        echo " ${SC_ADD_COUNT} rules added" >&2
+        SC_COUNT_PRINTED=1
     fi
     if [ "${SC_V}" = 1 ]; then echo "[$(date +'%H:%M:%S.%N')] ${SC_DISPLAY_NAME}: Making new chain live" >&2; fi
     # The new ruleset is now running after this command succeeds
@@ -162,9 +170,9 @@ _sc_cmd_postprocess() {
     _sc_iptables_run "${SC_CMD}" -F "${SC_NAME}_old"
     _sc_iptables_run "${SC_CMD}" -X "${SC_NAME}_old"
     if [ "${SC_CMD}" = "ip6tables" ]; then
-      SC_CURRENT_CHAIN_V6=""
+        SC_CURRENT_CHAIN_V6=""
     else
-      SC_CURRENT_CHAIN_V4=""
+        SC_CURRENT_CHAIN_V4=""
     fi
     if [ "${SC_V}" = 1 ]; then echo "[$(date +'%H:%M:%S.%N')] ${SC_DISPLAY_NAME}: Done!" >&2; fi
 }
@@ -183,25 +191,27 @@ sc46_postprocess() {
 # Do not call this directly.  Instead see sc_add_rule, sc6_add_rule and
 # sc46_add_rule below.
 _sc_cmd_add_rule() {
-    SC_CMD="$1"; shift
-    SC_NAME="$1"; shift
+    SC_CMD="$1"
+    shift
+    SC_NAME="$1"
+    shift
     if [ "${SC_CMD}" = "ip6tables" ]; then
-      SC_CURRENT_CHAIN="${SC_CURRENT_CHAIN_V6}"
+        SC_CURRENT_CHAIN="${SC_CURRENT_CHAIN_V6}"
     else
-      SC_CURRENT_CHAIN="${SC_CURRENT_CHAIN_V4}"
+        SC_CURRENT_CHAIN="${SC_CURRENT_CHAIN_V4}"
     fi
     if [ ! "${SC_NAME}" = "${SC_CURRENT_CHAIN}" ]; then
-      echo "${SC_NAME} != ${SC_CURRENT_CHAIN}!  Typo?  Bailing out." >&2
-      exit 1
+        echo "${SC_NAME} != ${SC_CURRENT_CHAIN}!  Typo?  Bailing out." >&2
+        exit 1
     fi
-    if [ "${SC_V}" = 1 ] && [ ${SC_ADD_COUNT} -eq 0 ]; then
-      printf "%s" "[$(date +'%H:%M:%S.%N')] ${SC_NAME}: Populating new chain..." >&2
+    if [ "${SC_V}" = 1 ] && [ "${SC_ADD_COUNT}" -eq 0 ]; then
+        printf "%s" "[$(date +'%H:%M:%S.%N')] ${SC_NAME}: Populating new chain..." >&2
     fi
     if [ -n "${SC_COMMENT:+1}" ]; then
         if [ "${#SC_COMMENT}" -gt 255 ]; then
             SC_COMMENT_TRUNCATE=$(echo "${SC_COMMENT}" | cut -c1-255)
         else
-            SC_COMMENT_TRUNCATE=$SC_COMMENT
+            SC_COMMENT_TRUNCATE="${SC_COMMENT}"
         fi
         _sc_iptables_run "${SC_CMD}" -A "${SC_NAME}_new" -m comment --comment="${SC_COMMENT_TRUNCATE}" "$@"
     else

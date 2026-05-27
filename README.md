@@ -115,7 +115,7 @@ For situations where the IPv4 and IPv6 commands are otherwise the same, there ar
 
 ## About
 
-Copyright (C) 2013-2020 Canonical Ltd., Ryan Finnie
+© 2013 Canonical Ltd., Ryan Finnie
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as
@@ -130,3 +130,12 @@ Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public
 License along with this program.  If not, see
 <https://www.gnu.org/licenses/>.
+
+This document is provided under the following license:
+
+    SPDX-PackageName: safechain
+    SPDX-PackageSupplier: Ryan Finnie <ryan@finnie.org>
+    SPDX-PackageDownloadLocation: https://forge.colobox.com/rfinnie/safechain
+    SPDX-FileComment: README
+    SPDX-FileCopyrightText: © 2020 Ryan Finnie <ryan@finnie.org>
+    SPDX-License-Identifier: CC-BY-SA-4.0
