@@ -1,5 +1,8 @@
 # Safechain
 
+[![Git forge repository](https://img.shields.io/badge/git-forge-orange?logo=forgejo)](https://forge.colobox.com/rfinnie/safechain)
+[![CI pipeline status](https://woodpecker.colobox.com/api/badges/66/status.svg)](https://woodpecker.colobox.com/repos/66)
+
 Safechain is a wrapper to load `iptables` chain rules in a safe, atomic, idempotent way.  Any syntax errors are caught before the updated chain is taken live, so a mistake does not take down a running firewall setup.
 
 As Safechain is a wrapper around `iptables`, converting a manual `iptables` setup to Safechain is mostly a matter of replacing `iptables -A` with `sc_add_rule`.
